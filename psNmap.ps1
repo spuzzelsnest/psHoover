@@ -29,9 +29,9 @@ For ($i = 1; $i -lt 254; $i++) {
             $ip = $ipRange+$i
 
             if( Test-Connection -count 1 -comp $ip -quiet ){
-                $ip
+                $ip | Out-File -Append -FilePath .\hostname.txt
             } 
 }
 
-#$online | Out-File -FilePath .\hostname.txt
-Write-Host "file written to hostname.txt"
+write-host "Scann donen content of hostname.txt"
+Get-Content .\hostname.txt
