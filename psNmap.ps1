@@ -38,6 +38,8 @@ $TCPports = @(22,80,443)
 $ips = @()
 $openPorts = @{}
 
+Get-Date
+
 Write-Host $ifList.count "Networkadapter(s) found.`n-"$ifList[0].Name"with IP $ownIP `nRunnig ping sweep on range "$ipRange"1/24"
 Clear-Content -Path .\hostname.txt
 
@@ -46,7 +48,7 @@ Clear-Content -Path .\hostname.txt
 For ($i = 1; $i -lt 254; $i++) {
     $ip = $ipRange+$i
     if ($ip -eq $ownIP){
-        Write-Debug "removing own IP"
+        Write-Debug "Removing own IP from List so no time is wasted scanning ports on localhost"
     }else{
         if ( Test-Connection -count 1 -comp $ip -quiet ){
             $ips += $ip
