@@ -25,8 +25,9 @@ $ErrorActionPreference = "silentlycontinue"
 $ifList = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
 $ownIP = (Get-NetIPAddress -InterfaceIndex $ifList[0].ifIndex).IPAddress
 $ipRange = (($ownIP.Split(".")|Select-Object -First 3) -join ".")+"."
-$ports = @(22,80,443)
+$TCPports = @(20,21,22,23,53,80,443,445,3389,4444,8080)
 $ips = @()
+$openPorts = @{}
 
 Write-Host $ifList.count "Networkadapter(s) found.`n"$ifList[0].Name"with IP $ownIP `nRunnig ping sweep on range "$ipRange"1/24"
 Clear-Content -Path .\hostname.txt
@@ -35,24 +36,31 @@ Clear-Content -Path .\hostname.txt
 
 For ($i = 1; $i -lt 254; $i++) {
     $ip = $ipRange+$i
-    if( Test-Connection -count 1 -comp $ip -quiet ){
-        $ips += ,$ip
+    if ($ip -eq $ownIP){
+        Write-Debug "removing own IP"
+    }else{
+        if ( Test-Connection -count 1 -comp $ip -quiet ){
+            $ips += $ip
+        }
     } 
 }
 
-"Scan done content of hostname.txt`n...Starting port scan on $ports ..."
+"... Starting port scan on $TCPports ..."
 
 foreach ($ip in $ips){
     write-host "found:  $ip"
-    foreach ($port in $ports){
+    foreach ($TCPport in $TCPports){
         If(Test-Connection -BufferSize 32 -Count 1 -Quiet -ComputerName $ip){
-            $socket = New-Object System.Net.Sockets.TcpClient($ip, $port)
+            $socket = New-Object System.Net.Sockets.TcpClient($ip, $TCPport)
             If($socket.Connected) {
-                Write-Host "$ip port $port open" -ForegroundColor Green
+                Write-Host "$ip port $TCPport open" -ForegroundColor Green
+                $openPorts.Add($ip,$TCPport) 
                 $socket.Close()
             }else{
-                write-host "$ip port $port not open" -ForegroundColor Red
+                Write-Host "$ip port $TCPport not open" -ForegroundColor Red
             }
         }
     }
 }
+
+$openPorts
