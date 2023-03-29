@@ -1,24 +1,33 @@
-<# 
+<#
 .SYNOPSIS
-    Portscan that prints the ping responce to a text file: hostname.txt
+    Portscan that scans for Online hosts on the subnet of the first connected network Adapter on your PC.
 
 .DESCRIPTION
-    The Portscan is used to scan a range of ports
- 
+    Portscan that scans for Online hosts on the subnet of the first connected network Adapter on your PC.
+    The range of ports can be edited to change results. Scanning a Subnet can take up to 15 minutes.
+    Limiting the amount of ports will drop the time.
+
 .NOTES
     Run in default powershell.
 
 .COMPONENT 
-    Information about PowerShell Modules to be required.
+    Not running any extra Modules.
 
 .LINK
-    github.com/spuzzelsnest
- 
+    https://github.com/spuzzelsnest/
+
 .Parameter ParameterName
-    $ip     - is used to define the first 3 octets of the IP range wich is used to run the script. It searches from 1 to 254 via a ping scan through the IP addresses.
+    $ifList     - list of all found Network Adaptors with the status UP.
+    $ownIP      - IP from the first in the list of Network Adaptors that was found wit the status UP. 
+    $ipRange    - IP Range define of the first 3 octets of the variable Own IP.
+    $TCPports   - List of Popuplar ports.
+    $ips        - Empty array for storing Online IP's
+    $openPorts  - Empty hashtable for storing Online IP's with Open Ports
+
 #>
 
 # env
+
 $ErrorActionPreference = "silentlycontinue"
 
 # Vars
@@ -32,7 +41,7 @@ $openPorts = @{}
 Write-Host $ifList.count "Networkadapter(s) found.`n-"$ifList[0].Name"with IP $ownIP `nRunnig ping sweep on range "$ipRange"1/24"
 Clear-Content -Path .\hostname.txt
 
-# Running ping scan on default range from 1 to 254 
+# Running ping scan on default range from 1 to 254
 
 For ($i = 1; $i -lt 254; $i++) {
     $ip = $ipRange+$i
@@ -63,4 +72,6 @@ foreach ($ip in $ips){
 
 Write-host "`nFound the folling open ports" -ForegroundColor Green
 
-$openPorts
+# Opening Hashtable in GridView
+
+$openPorts | Out-GridView
