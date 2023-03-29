@@ -34,7 +34,7 @@ $ErrorActionPreference = "silentlycontinue"
 $ifList = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
 $ownIP = (Get-NetIPAddress -InterfaceIndex $ifList[0].ifIndex).IPAddress
 $ipRange = (($ownIP.Split(".")|Select-Object -First 3) -join ".")+"."
-$TCPports = @(20,21,22,23,53,80,443,445,3389,4444,8080)
+$TCPports = @(22,80,443)
 $ips = @()
 $openPorts = @{}
 
