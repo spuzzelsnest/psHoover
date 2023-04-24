@@ -33,13 +33,14 @@ $ErrorActionPreference = "silentlycontinue"
  
 # Vars
 $ifList = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+$ping = New-Object System.Net.NetworkInformation.ping
 $ifIndex = 0
 $TCPports = @(22,80,443)
 $ips = @()
 $openPorts = @{}
  
 # Start Program
-Write-Host Get-Date
+Write-Host $(Get-Date)
  
 # Select wich Network Adapter to use
 Write-Host $ifList.Count "Networkadapter(s) found.`nPlease select a network adapter to use.`n"
@@ -76,7 +77,7 @@ For ($i = 1; $i -lt 254; $i++) {
     if ($ip -eq $ownIP){
         Write-Debug "Removing own IP from List so no time is wasted scanning ports on localhost"
     }else{
-        if ( Test-Connection -count 1 -comp $ip -quiet ){
+        if ($ping.send($ip,500).status -eq "Success"){
             $ips += $ip
         }
     }
@@ -89,8 +90,8 @@ foreach ($ip in $ips){
         If(Test-Connection -BufferSize 32 -Count 1 -Quiet -ComputerName $ip){
             $socket = New-Object System.Net.Sockets.TcpClient($ip, $TCPport)
             If($socket.Connected) {
-                $openPorts.Add($ip,$TCPport) 
                 $socket.Close()
+                $openPorts.Add($ip,$TCPport)
             }else{
                 Write-Debug "$ip port $TCPport not open"
             }
